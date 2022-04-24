@@ -1,0 +1,54 @@
+name: main
+on:
+  pull_request:
+  push:
+    branches:
+    - master
+    tags-ignore:
+    - '*'
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+    - run: make test SUDO=sudo
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+    - run: make lint SUDO=sudo
+  dry-run-release:
+    name: Dry-run release
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - uses: docker/setup-qemu-action@v1
+    - uses: docker/setup-buildx-action@v1
+    - name: Build docker image
+      run: make docker-image DOCKER_BUILD_ARGS="--load"
+    - name: Test built containers
+      run: make container-structure-test
+  tag:
+    name: Tag release
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    needs: [lint, test, dry-run-release]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.PAT }}
+      - name: Tag release
+        run: |
+          TAG="v$(cat VERSION)"
+          git tag ${TAG}
+          git push origin ${TAG} || true
