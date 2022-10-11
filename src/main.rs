@@ -3,17 +3,16 @@ use milter::{Context, Milter, Status};
 use mxdns::MxDns;
 use once_cell::sync::Lazy;
 use regex::Regex;
-use trust_dns_resolver::config::*;
 use trust_dns_resolver::Resolver;
 
 static RESOLVER: Lazy<Resolver> =
-    Lazy::new(|| Resolver::new(ResolverConfig::default(), ResolverOpts::default()).unwrap());
+    Lazy::new(|| Resolver::from_system_conf().unwrap());
 
 static DOMAIN_RE: Lazy<Regex> = Lazy::new(|| {
     Regex::new(
         r"(?x)
     ^[^@\s]+@
-    (?P<domain>([[:word:]]+\.)*
+    (?P<domain>([a-zA-Z-]+\.)*
     [[:word:]]+)$
 ",
     )
@@ -34,6 +33,10 @@ struct Args {
     /// Address of the DNSBL server
     #[clap(short, long, default_value = "zen.spamhaus.org")]
     blocklist: String,
+
+    /// Custom nameserver for DNSBL
+    #[clap(short, long, default_value = "")]
+    nameserver: String,
 }
 
 fn get_domain(email: &str) -> Option<&str> {
@@ -42,11 +45,20 @@ fn get_domain(email: &str) -> Option<&str> {
         .and_then(|cap| cap.name("domain").map(|domain| domain.as_str()))
 }
 
+fn get_blocklist_resolver(nameserver: String, blocklist: String) -> MxDns {
+    let blocklists = vec![blocklist];
+    if nameserver != "" {
+        if let Ok(ip_response) = RESOLVER.lookup_ip(nameserver) {
+            return MxDns::with_dns(ip_response.iter().last().unwrap(), blocklists);
+        }
+    }
+    return MxDns::new(blocklists).unwrap();
+}
+
 #[milter::on_rcpt(rcpt_callback)]
 fn handle_rcpt(mut ctx: Context<String>, recipients: Vec<&str>) -> milter::Result<Status> {
     let args = Args::parse();
-    let blocklists = vec![args.blocklist];
-    let mxdns = MxDns::new(blocklists).unwrap();
+    let mxdns = get_blocklist_resolver(args.nameserver, args.blocklist);
     for rcpt in recipients.iter() {
         if let Some(rcpt_domain) = get_domain(rcpt) {
             if let Ok(mx_response) = RESOLVER.mx_lookup(format!("{rcpt_domain}.")) {
@@ -57,7 +69,7 @@ fn handle_rcpt(mut ctx: Context<String>, recipients: Vec<&str>) -> milter::Resul
                                 let bad_ip = addr.to_string();
                                 match ctx.data.borrow_mut() {
                                     Some(bad_ips) => {
-                                        *bad_ips = format!("{bad_ips},{bad_ip}")
+                                        *bad_ips = format!("{bad_ips},{bad_ip}");
                                     }
                                     None => {
                                         ctx.data.replace(bad_ip)?;
