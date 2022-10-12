@@ -21,7 +21,7 @@ static DOMAIN_RE: Lazy<Regex> = Lazy::new(|| {
 });
 
 #[derive(Parser, Debug)]
-#[command(author, version, about, long_about = None)]
+#[command(author="@Hsn723", version, about="A milter for rejecting recipients based on DNSBL", long_about = None)]
 struct Args {
     /// Mode of enforcement
     #[arg(short, long, value_parser = PossibleValuesParser::new(["audit", "enforce"]), default_value = "audit")]
