@@ -1,3 +1,4 @@
+use clap::builder::PossibleValuesParser;
 use clap::Parser;
 use milter::{Context, Milter, Status};
 use mxdns::MxDns;
@@ -20,22 +21,22 @@ static DOMAIN_RE: Lazy<Regex> = Lazy::new(|| {
 });
 
 #[derive(Parser, Debug)]
-#[clap(author, version, about, long_about = None)]
+#[command(author="@Hsn723", version, about="A milter for rejecting recipients based on DNSBL", long_about = None)]
 struct Args {
     /// Mode of enforcement
-    #[clap(short, long, possible_values(["audit", "enforce"]), default_value = "audit")]
+    #[arg(short, long, value_parser = PossibleValuesParser::new(["audit", "enforce"]), default_value = "audit")]
     mode: String,
 
     /// Address to listen at
-    #[clap(short, long, default_value = "inet:3000@localhost")]
+    #[arg(short, long, default_value = "inet:3000@localhost")]
     listen_addr: String,
 
     /// Address of the DNSBL server
-    #[clap(short, long, default_value = "zen.spamhaus.org")]
+    #[arg(short, long, default_value = "zen.spamhaus.org")]
     blocklist: String,
 
     /// Custom nameserver for DNSBL
-    #[clap(short, long, default_value = "")]
+    #[arg(short, long, default_value = "")]
     nameserver: String,
 }
 
