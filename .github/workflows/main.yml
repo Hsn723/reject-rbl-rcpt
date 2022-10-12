@@ -12,18 +12,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - uses: actions-rs/toolchain@v1
-      with:
-        toolchain: stable
+    - run: rustup install stable
     - run: make miltertest SUDO=sudo
   lint:
     name: Lint
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - uses: actions-rs/toolchain@v1
-      with:
-        toolchain: stable
+    - run: rustup install stable
     - run: make lint SUDO=sudo
   dry-run-release:
     name: Dry-run release
