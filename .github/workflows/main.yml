@@ -15,7 +15,7 @@ jobs:
     - uses: actions-rs/toolchain@v1
       with:
         toolchain: stable
-    - run: make test SUDO=sudo
+    - run: make miltertest SUDO=sudo
   lint:
     name: Lint
     runs-on: ubuntu-latest
