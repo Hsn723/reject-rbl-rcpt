@@ -22,4 +22,4 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.PAT }}
       - name: Build and push docker image
-        run: make docker-image DOCKER_BUILD_ARGS="--push --platform linux/arm64/v8,linux/amd64"
+        run: make docker-image DOCKER_BUILD_ARGS="--push --platform linux/amd64"
