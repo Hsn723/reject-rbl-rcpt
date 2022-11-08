@@ -3,14 +3,23 @@ CST_VERSION = 1.10.0
 SUDO =
 DOCKER_BUILD_ARGS =
 PKG_CONFIG_PATH = .
+TARGETARCH = amd64
+ifneq (,$(findstring arm,$(TARGETARCH)))
+    ARCH = aarch64-unknown-linux-gnu
+else
+    ARCH = x86_64-unknown-linux-gnu
+endif
 
 export PKG_CONFIG_PATH
 
-debug: dev-deps
-	cargo build
+target-platform:
+	rustup target add $(ARCH)
 
-release: deps
-	cargo build -r
+debug: dev-deps target-platform
+	cargo build --target=$(ARCH)
+
+release: deps target-platform
+	cargo build -r --target=$(ARCH)
 
 docker-image:
 	docker buildx build $(DOCKER_BUILD_ARGS) --tag ghcr.io/hsn723/reject-rbl-rcpt:$(shell git describe --tags --abbrev=0 --match "v*" || echo v0.0.0) .
