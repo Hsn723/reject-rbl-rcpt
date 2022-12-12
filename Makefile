@@ -42,13 +42,13 @@ lint: deps
 	cargo fmt
 	cargo check
 
-dev-deps: deps opendkim-tools
+dev-deps: deps install-miltertest
 
 deps: libmilter-dev
 
-opendkim-tools:
+install-miltertest:
 	@if [ -z "$(shell which miltertest)" ]; then \
-		$(SUDO) apt-get update && $(SUDO) apt-get install -y --no-install-recommends $@ ;\
+		$(SUDO) apt-get update && $(SUDO) apt-get install -y --no-install-recommends miltertest ;\
 	fi
 
 libmilter-dev:
