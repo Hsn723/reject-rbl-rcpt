@@ -1,4 +1,4 @@
-FROM ghcr.io/instrumentisto/rust:1.66.1-buster as build
+FROM ghcr.io/instrumentisto/rust:1.67.0-buster as build
 WORKDIR /work/
 COPY . .
 RUN make release \
