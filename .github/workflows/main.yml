@@ -11,21 +11,21 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - run: rustup install stable
     - run: make miltertest SUDO=sudo
   lint:
     name: Lint
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - run: rustup install stable
     - run: make lint SUDO=sudo
   dry-run-release:
     name: Dry-run release
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - uses: docker/setup-qemu-action@v2
@@ -40,7 +40,7 @@ jobs:
     needs: [lint, test, dry-run-release]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           token: ${{ secrets.PAT }}
       - name: Tag release
