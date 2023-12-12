@@ -10,7 +10,7 @@ clap = { version = "4.4.11", features = ["derive"] }
 libc = "0.2"
 milter = "0.2"
 mxdns = "0.4"
-once_cell = "1.18"
+once_cell = "1.19"
 regex = "1.10"
 trust-dns-resolver = "0.23"
 
